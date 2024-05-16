@@ -1,12 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "foge.h"
 
-char** mapa; // +1 para o '\0'
+char** mapa;
 int linhas;
 int colunas;
 
-int main(){
-
+void aloca_mapa(){
+    mapa = malloc(sizeof(char*) * linhas); //alocando inteiros * quantidade que quereomos alocar
+    for(int i = 0; i < linhas; i++){
+        mapa[i] =  malloc(sizeof(char) * (colunas + 1)); //colunas +1 porque temos o \0 no final de cada linha
+    }
+}
+void le_mapa(){
     FILE *f;
     f = fopen("mapa.txt", "r"); //abrindo arquivo para leitura
     if(f == NULL){
@@ -14,31 +20,75 @@ int main(){
         exit(1);
     }
 
-//lendo o tamanho do mapa, em tempo de execução
+//lendo o tamanho do mapa, em tempo de execuÃ§Ã£o
     fscanf(f, "%d %d", &linhas, &colunas);
-    printf("linhas: %d colunas: %d\n", linhas, colunas);
-
-
-    mapa = malloc(sizeof(char) * linhas); //alocando inteiros * quantidade que quereomos alocar
-    for(int i = 0; i < linhas; i++){
-        mapa[i] =  malloc(sizeof(char) * (colunas + 1)); //colunas +1 porque temos o \0 no final de cada linha
-    }
-    //printf("inteiro alocado %d\n", *v);
+    aloca_mapa();
 
     for(int i = 0; i < 5; i++){
         fscanf(f, "%s", mapa[i]);
     }
-    
-    for(int i = 0; i < 5; i++){
-        printf("%s\n", mapa[i]);
-    }
     fclose(f);
-
-    for(int i = 0; i < 5; i++){
-        free(mapa[i]);
-    }
-    free (mapa);
-    
 }
 
-//criaremos dinamicamente uma matriz
+void libera_mapa(){
+    for(int i = 0; i < linhas; i++){
+        free(mapa[i]);
+    }
+    free(mapa);
+}
+
+void imprime_mapa(){
+    for(int i = 0; i < linhas; i++){
+        printf("%s\n", mapa[i]);
+    }
+}
+
+int acabou(){
+    return 0;
+}
+
+void move(char direcao){
+    //primeiro precisamos localizar onde estÃ¡ o carinha do nosso jogo
+    int x, y;
+    for(int i = 0; i < linhas; i++){
+        for(int j = 0; j < colunas; j++){
+            if(mapa[i][j] == '@'){
+                x = i;
+                y =j;
+                break;
+            }
+        }
+    }
+// movendo o @ de acordo com seu respectivo comando
+    switch(direcao){
+        case 'a':
+            mapa[x][y-1] = '@'; //x = linha y = colunas
+            break;
+        case 'w':
+            mapa[x-1][y] = '@';
+            break;
+        case 's':
+            mapa[x+1][y] = '@';
+            break;
+        case 'd':
+            mapa[x][y+1] = '@';
+            break;
+    }
+    mapa[x][y] = '.'; 
+    //tirando o pacman da posicao atual, colocando . no lugar
+}   
+
+
+
+int main(){
+
+    le_mapa();
+    do{
+        imprime_mapa();
+        char comando;
+        scanf(" %c", &comando);
+        move(comando);
+    }while(!acabou());
+
+    libera_mapa();
+}
