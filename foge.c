@@ -1,94 +1,78 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "foge.h"
+#include "mapa.h"
 
-char** mapa;
-int linhas;
-int colunas;
+MAPA m;
+POSICAO pos; //guarda a posicao atual do @
 
-void aloca_mapa(){
-    mapa = malloc(sizeof(char*) * linhas); //alocando inteiros * quantidade que quereomos alocar
-    for(int i = 0; i < linhas; i++){
-        mapa[i] =  malloc(sizeof(char) * (colunas + 1)); //colunas +1 porque temos o \0 no final de cada linha
-    }
-}
-void le_mapa(){
-    FILE *f;
-    f = fopen("mapa.txt", "r"); //abrindo arquivo para leitura
-    if(f == NULL){
-        printf("Erro ao abrir o arquivo!");
-        exit(1);
-    }
-
-//lendo o tamanho do mapa, em tempo de execução
-    fscanf(f, "%d %d", &linhas, &colunas);
-    aloca_mapa();
-
-    for(int i = 0; i < 5; i++){
-        fscanf(f, "%s", mapa[i]);
-    }
-    fclose(f);
-}
-
-void libera_mapa(){
-    for(int i = 0; i < linhas; i++){
-        free(mapa[i]);
-    }
-    free(mapa);
-}
-
-void imprime_mapa(){
-    for(int i = 0; i < linhas; i++){
-        printf("%s\n", mapa[i]);
-    }
-}
-
-int acabou(){
+int acabou(){ //funcao acabou - falta ser implementada
     return 0;
 }
 
 void move(char direcao){
-    //primeiro precisamos localizar onde está o carinha do nosso jogo
-    int x, y;
-    for(int i = 0; i < linhas; i++){
-        for(int j = 0; j < colunas; j++){
-            if(mapa[i][j] == '@'){
-                x = i;
-                y =j;
-                break;
-            }
-        }
+
+    if(direcao != 'a' && direcao != 'w' && direcao != 's' && direcao != 'd'){
+        return; //terminando a funcao, se um char não esperado for digitado
     }
-// movendo o @ de acordo com seu respectivo comando
-    switch(direcao){
+
+    int prox_x = pos.x;
+    int prox_y = pos.y;
+
+
+
+    switch(direcao){ // movendo o @ de acordo com seu respectivo comando
         case 'a':
-            mapa[x][y-1] = '@'; //x = linha y = colunas
+            //m.matriz[pos.x][pos.y-1] = '@';
+            //pos.y--; // varia posicao -> deslocou pra esquerda
+            prox_y--;
             break;
         case 'w':
-            mapa[x-1][y] = '@';
+            // m.matriz[pos.x-1][pos.y] = '@';
+            // pos.x--; // varia posicao -> deslocou pra baixo
+            prox_x--;
             break;
         case 's':
-            mapa[x+1][y] = '@';
+            // m.matriz[pos.x+1][pos.y] = '@';
+            // pos.x++; // varia posicao -> deslocou pra direita
+            prox_x++;
             break;
         case 'd':
-            mapa[x][y+1] = '@';
-            break;
+            // m.matriz[pos.x][pos.y+1] = '@';
+            // pos.y++;
+            prox_y++;
+            break; // varia posicao -> deslocou pra cima
     }
-    mapa[x][y] = '.'; 
-    //tirando o pacman da posicao atual, colocando . no lugar
-}   
-
-
+    if(prox_x >= m.linhas) // maior que a quantidade de linhas (não existe)
+        return;
+    if(prox_y >= m.colunas) // maior que a quantidade de colunas (não existe)
+        return;
+    if(m.matriz[prox_x][prox_y] != '.') // se não for um '.' não 'anda'
+        return;
+    
+    //agora pode andar, apenas podemos onde existir '.'
+    m.matriz[prox_x][prox_y] = '@';
+    m.matriz[pos.x][pos.y] = '.';
+    pos.x = prox_x;
+    pos.y = prox_y;
+}
 
 int main(){
 
-    le_mapa();
-    do{
-        imprime_mapa();
-        char comando;
-        scanf(" %c", &comando);
-        move(comando);
-    }while(!acabou());
+    le_mapa(&m);
+    encontra_mapa(&m, &pos, '@');
 
-    libera_mapa();
+    do{
+        imprime_mapa(&m);
+        char comando;
+        scanf(" %c", &comando); //lendo a entrada atual
+
+        move(comando);
+
+    }while(!acabou()); //enquando o jogo nao acabar...
+
+    libera_mapa(&m);
+
 }
+
+//" %c" -> com espaço porque o espaço ajuda a ler o anterior enter e nao causar mais problemas
