@@ -46,9 +46,27 @@ void encontra_mapa(MAPA* m, POSICAO* pos, char c){ //c = char buscado(@)
 
 }
 
+int pertence_mapa(MAPA* m, int x, int y) {
+    if(x >= m->linhas) // maior que a quantidade de linhas (não existe)
+        return 0;
+    if(y >= m->colunas) // maior que a quantidade de colunas (não existe)
+        return 0;
+    return 1;
+}
+
+int espaco_livre(MAPA* m, int x, int y) {
+    return m->matriz[x][y] == VAZIO; // é posição vazia(pode andar) se for ponto
+}
+
 void libera_mapa(MAPA* m){
     for(int i = 0; i < m->linhas; i++){
         free(m->matriz[i]);
     }
     free(m->matriz);
+}
+
+void anda_no_mapa(MAPA* m, int x_org, int y_org, int x_dest, int y_dest) {
+    char personagem = m->matriz[x_org][y_org]; 
+    m->matriz[x_dest][y_dest] = personagem; //personagem está em nova posição
+    m->matriz[x_org][y_org] = VAZIO; //personagem saiu dessa posição(atualiza com .)
 }

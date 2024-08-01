@@ -10,10 +10,15 @@ int acabou(){ //funcao acabou - falta ser implementada
     return 0;
 }
 
+int direcao_valida(char direcao) { // verifica se é uma direcao(char) esperada
+    return direcao == 'a' || direcao == 'w' || direcao == 's' || direcao == 'd';
+}
+
+
 void move(char direcao){
 
-    if(direcao != 'a' && direcao != 'w' && direcao != 's' && direcao != 'd'){
-        return; //terminando a funcao, se um char não esperado for digitado
+    if(!direcao_valida){
+        return; //a direção não é valida
     }
 
     int prox_x = pos.x;
@@ -22,45 +27,37 @@ void move(char direcao){
 
 
     switch(direcao){ // movendo o @ de acordo com seu respectivo comando
-        case 'a':
-            //m.matriz[pos.x][pos.y-1] = '@';
-            //pos.y--; // varia posicao -> deslocou pra esquerda
+        case ESQUERDA:
             prox_y--;
             break;
-        case 'w':
-            // m.matriz[pos.x-1][pos.y] = '@';
-            // pos.x--; // varia posicao -> deslocou pra baixo
+        case CIMA:
             prox_x--;
             break;
-        case 's':
-            // m.matriz[pos.x+1][pos.y] = '@';
-            // pos.x++; // varia posicao -> deslocou pra direita
+        case BAIXO:
             prox_x++;
             break;
-        case 'd':
-            // m.matriz[pos.x][pos.y+1] = '@';
-            // pos.y++;
+        case DIREITA:
             prox_y++;
             break; // varia posicao -> deslocou pra cima
     }
-    if(prox_x >= m.linhas) // maior que a quantidade de linhas (não existe)
-        return;
-    if(prox_y >= m.colunas) // maior que a quantidade de colunas (não existe)
-        return;
-    if(m.matriz[prox_x][prox_y] != '.') // se não for um '.' não 'anda'
+
+    if(!pertence_mapa(&m, prox_x, prox_y)) // verifica se a área pertence ao mapa
         return;
     
-    //agora pode andar, apenas podemos onde existir '.'
-    m.matriz[prox_x][prox_y] = '@';
-    m.matriz[pos.x][pos.y] = '.';
+    if(!espaco_livre(&m, prox_x, prox_y)) // verifica se pode andar (não é parede)
+        return;
+    
+    anda_no_mapa(&m, pos.x, pos.y, prox_x, prox_y);
     pos.x = prox_x;
     pos.y = prox_y;
+
+
 }
 
 int main(){
 
     le_mapa(&m);
-    encontra_mapa(&m, &pos, '@');
+    encontra_mapa(&m, &pos, HEROI);
 
     do{
         imprime_mapa(&m);
@@ -72,6 +69,7 @@ int main(){
     }while(!acabou()); //enquando o jogo nao acabar...
 
     libera_mapa(&m);
+    
 
 }
 
